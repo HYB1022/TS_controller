@@ -11,15 +11,18 @@ if exist "dist" (
 )
 
 :: 2. PyInstaller 경량화 빌드 실행
-:: 불필요한 내장 대형 모듈(디버그 로그, 테스트 킷, 멀티미디어 도구)을 빌드에서 명시적으로 제외(Exclude)합니다.
 pyinstaller --clean --onefile --noconsole ^
     --icon="imgs\icon.ico" ^
-    --add-data "imgs\icon.ico;." ^
-    --collect-all keyboard ^
+    --add-data "imgs\icon.ico;imgs" ^
     --exclude-module tkinter.test ^
     --exclude-module pydoc ^
     --exclude-module unittest ^
     --exclude-module distutils ^
+    --exclude-module email ^
+    --exclude-module html ^
+    --exclude-module http ^
+    --exclude-module logging ^
+    --upx-dir=. ^
     TS_controller.py
 
 echo.

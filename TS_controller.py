@@ -184,11 +184,10 @@ class App:
         self.k_rev_fwd    = tk.StringVar(value="up")   
         self.k_rev_bwd    = tk.StringVar(value="down") 
 
-        # 동적 조이스틱 버튼 매핑 리스트 관리자 (dict 형태의 리스트)
         self.dyn_mappings = []
 
         self.live_max_power_notch = 13
-        self.live_max_brake_notch = 5
+        self.live_max_brake_notch = 1
 
         self.active_binding_btn = None
         self.joy_catch_active = False
@@ -328,14 +327,19 @@ class App:
         dp = self._section(self.tab_main, "실시간 상태")
         df = tk.Frame(dp, bg=PANEL, padx=12, pady=12)
         df.pack(fill="x")
-        for i in range(3): df.columnconfigure(i, weight=1)
+        
+        # 이름 긴 조이스틱 잘림 해결을 위한 가중치 비율 조정
+        df.columnconfigure(0, weight=3) # JOYSTICK 영역에 넓은 가중치 배정
+        df.columnconfigure(1, weight=1)
+        df.columnconfigure(2, weight=1)
 
         def status_card(col, label, var):
             card = tk.Frame(df, bg=CARD, bd=0, highlightthickness=1, highlightbackground=BORDER)
             card.grid(row=0, column=col, sticky="ew", padx=4, pady=2)
             tk.Label(card, text=label, bg=CARD, fg=FG_DIM, font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=10, pady=(8,0))
-            l = tk.Label(card, textvariable=var, bg=CARD, fg=FG, font=("Segoe UI", 18, "bold"), width=8, anchor="w")
-            l.pack(anchor="w", padx=10, pady=(0,8))
+            # 잘림 문제 수정: width 제거 또는 여유롭게 설정하여 텍스트가 끝까지 표시되게 방어
+            l = tk.Label(card, textvariable=var, bg=CARD, fg=FG, font=("Segoe UI", 16, "bold"), anchor="w")
+            l.pack(anchor="w", padx=10, pady=(0,8), fill="x")
             return l
 
         status_card(0, "JOYSTICK", self.joy)
@@ -669,7 +673,6 @@ class App:
         notch_matched = False
         reverser_matched = False
         
-        # 키 연속 입력 중복 방지 트래킹용 딕셔너리
         active_key_states = {}
 
         self.write(f"🔒 대기 상태: 동기화를 위해 레버를 [ 노치: {START_NOTCH} / 역전기: {START_REV} ] 로 조작해 주세요.", "warn")
@@ -686,7 +689,6 @@ class App:
                 k_rfwd  = self.k_rev_fwd.get()
                 k_rbwd  = self.k_rev_bwd.get()
 
-                # 실시간 동적 매핑 캐싱 데이터 가공
                 current_runtime_binds = []
                 for item in self.dyn_mappings:
                     j_val = item["joy_btn"].get()
@@ -702,18 +704,33 @@ class App:
                     elif rev_axis > 0.6:  current_hardware_rev = "R"
                     else:                 current_hardware_rev = "N"
 
-                # 2. 노치(마스콘) 연산 - 순수 마스콘 신호용 조합만 추적
+                # 2. 노치(마스콘) 연산
                 state = tuple(i for i in range(js.get_numbuttons()) if js.get_button(i))
                 notch_state = tuple(i for i in state if i in MASCON_BUTTONS)
                 
-                current_hardware_notch_idx = last_notch
+                # 🔥 핵심 수정 유도 보정 구간
+                max_p = self.live_max_power_notch
+                max_b = self.live_max_brake_notch
+                
                 if notch_state in NOTCH:
                     raw_notch_idx = NOTCH[notch_state]
-                    max_p = self.live_max_power_notch
-                    max_b = self.live_max_brake_notch
-                    if raw_notch_idx > max_p: raw_notch_idx = max_p
-                    if raw_notch_idx < max_b: raw_notch_idx = max_b
+                    
+                    # 읽어온 값이 설정된 한계치를 초과하는 하드웨어적 바깥 영역일 경우
+                    if raw_notch_idx > max_p: 
+                        raw_notch_idx = max_p
+                    if raw_notch_idx < max_b: 
+                        raw_notch_idx = max_b
+                        
                     current_hardware_notch_idx = raw_notch_idx
+                else:
+                    # 💡 접점이 떨어지는 과도기 구간 혹은 매핑되지 않은 완전 바깥 버튼 영역일 때 
+                    # 초기 중립(9)으로 복귀하는 대신, "기존에 누르고 있던 직전 물리 상태 정보"를 유지하여 고정시킵니다.
+                    if last_notch > max_p:
+                        current_hardware_notch_idx = max_p
+                    elif last_notch < max_b:
+                        current_hardware_notch_idx = max_b
+                    else:
+                        current_hardware_notch_idx = last_notch
 
                 # 3. 안전망 동기화 체크
                 if not reverser_matched:
@@ -754,7 +771,7 @@ class App:
                         self.last_dir = "N"
                         self.write("역전기 신호 변경 ➔ [중립]", "notch")
 
-                # 🔥 [홀드 기능 보완] 커스텀 동적 버튼 실시간 홀드(Hold) 연산 처리
+                # 커스텀 동적 버튼 실시간 홀드(Hold) 연산 처리
                 for j_btn, k_out in current_runtime_binds:
                     is_pressed = js.get_button(j_btn)
                     was_pressed = active_key_states.get(j_btn, False)
