@@ -34,19 +34,13 @@ release는 v1.x.x 형식으로 표시되어야 합니다.
 <img src="https://github.com/HYB1022/TS_controller/blob/main/imgs/main1.png?raw=true" width="500"/>
 
 ## 🧰 기능
-1. 관찰 비율(1~99%)에 따른 최적 성공 확률 계산
-2. 시뮬레이션 결과를 그래프로 시각화
-3. 최적 정지 이론의 이론값과 실험값 비교
+1. 자신이 이용하는 시뮬레이터에 맞게 키 맵핑
+2. 키 홀드, 특수 키 지정 지원
+3. 실시간 컨트롤러 상태 확인 가능
 ## ❓ How to?
-1. https://www.python.org/downloads/ 에서 Python 설치 관리자를 다운로드한 후, 실행하여 Python을 설치합니다.
-2. Win -> CMD를 검색하여 실행한 후, 다음 명령어를 입력합니다.
-
-```cmd
-pip install matplotlib
-pip install pandas
-```
-3. 릴리즈 탭에 있는 Source code를 저장한 후, main.py를 실행하면 됩니다.
-
+1. 릴리즈를 다운로드 받은 후, 실행합니다.
 ## 🤗 기여자
 - 방현우 (@HYB1022) - 기획, 프롬프트, 깃헙 페이지 제작
-- ChatGPT (@OpenAI) – simulation design, debugging, documentation support
+- ChatGPT (@OpenAI)
+- Claude (@Anthropic)
+- Gemini (@Google)
