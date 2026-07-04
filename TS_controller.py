@@ -123,7 +123,7 @@ class App:
         self.vehicles = scan_vehicles()
 
         if not self.vehicles:
-            default_ini = os.path.join("vehicles", "default_vehicle.ini")
+            default_ini = os.path.join("vehicles", "Default.ini")
             c = configparser.ConfigParser()
             c["Vehicle"] = {
                 "start_notch": "N", "start_reverser": "N", "max_power": "4", "max_brake": "8",
