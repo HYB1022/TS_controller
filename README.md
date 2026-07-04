@@ -4,51 +4,34 @@
 <picture>
   <source
     media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/title_dark.png"
+    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
   >
   <source
     media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/title_light.png"
+    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
   >
   <img
-    src="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/title_light.png"
+    src="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
     width="600"
-    alt="최적 정지 이론 모의 실험"
+    alt="TS_Controller"
   >
 </picture>
 
-### 최적 정지 이론 모의 실험
+### TrainSimulator Controller
 
-<picture>
-  <source
-    media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/help_dark.png"
-  >
-  <source
-    media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/help_light.png"
-  >
-  <img
-    src="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/main/help_light.png"
-    width="400"
-    alt="도움말"
-  >
-</picture>
-
-[![GitHub Release](https://img.shields.io/github/v/release/HYB1022/opti_stopping_test?include_prereleases)](https://github.com/HYB1022/opti_stopping_test/releases)
-[<img src="https://img.shields.io/badge/프로젝트 기간-2026.6.9~2026.6.16-fab2ac?style=flat&logo=&logoColor=white" />]()
+[![GitHub Release](https://img.shields.io/github/v/release/HYB1022/Ts_Controller?include_prereleases)](https://github.com/HYB1022/TS_controller/releases)
+[<img src="https://img.shields.io/badge/프로젝트 기간-2026.6.27~-fab2ac?style=flat&logo=&logoColor=white" />]()
 
 </div> 
 위 단추들이 제대로 표시되지 않는다면, 페이지를 새로고침 하거나, 잠시 후에 다시 접속 하십시오.
 
 release는 v1.x.x 형식으로 표시되어야 합니다.
 
-이 사이트는 다크모드를 지원합니다. 다만 라이트모드에 최적화 되어있기 때문에, 라이트모드 사용을 권장합니다.
-
 ## 📝 소개
-진로 독서 활동 기록지용 리포지토리입니다.
+산잉중공 컨트롤러 미지원 프로그램용 컨트롤러 맵핑 프로그램입니다.
 
-<img src="https://raw.githubusercontent.com/HYB1022/opti_stopping_test/refs/heads/main/optimal_stopping_graph.png" width="500"/>
+<img src="https://github.com/HYB1022/TS_controller/blob/main/imgs/main.png?raw=true" width="500"/>
+<img src="https://github.com/HYB1022/TS_controller/blob/main/imgs/main1.png?raw=true" width="500"/>
 
 ## 🧰 기능
 1. 관찰 비율(1~99%)에 따른 최적 성공 확률 계산
