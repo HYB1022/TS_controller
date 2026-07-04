@@ -13,8 +13,8 @@ if exist "dist" (
 :: 2. PyInstaller 경량화 빌드 실행
 :: 불필요한 내장 대형 모듈(디버그 로그, 테스트 킷, 멀티미디어 도구)을 빌드에서 명시적으로 제외(Exclude)합니다.
 pyinstaller --clean --onefile --noconsole ^
-    --icon="icon.ico" ^
-    --add-data "icon.ico;." ^
+    --icon="imgs\icon.ico" ^
+    --add-data "imgs\icon.ico;." ^
     --collect-all keyboard ^
     --exclude-module tkinter.test ^
     --exclude-module pydoc ^
@@ -38,8 +38,8 @@ if exist "TS_controller.spec" (
 
 :: 4. 현재 폴더에 있는 *.ini 차량 프로필 설정 파일들을 새로 만든 dist 폴더로 복사
 if exist "dist" (
-    echo [2/2] 모든 .ini 환경 설정 파일들을 dist 폴더로 복사 중...
-    copy /y "*.ini" "dist\" >nul
+    echo [2/2] vehicles 폴더 및 하위 설정을 dist 폴더로 복사 중...
+    xcopy /e /i /y "vehicles" "dist\vehicles" >nul
 )
 
 echo ===================================================

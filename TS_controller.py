@@ -85,8 +85,19 @@ KEY_MAP_FIX = {
 }
 
 def scan_vehicles():
-    files = sorted(glob.glob("*.ini"))
-    return {os.path.splitext(os.path.basename(f))[0]: os.path.abspath(f) for f in files}
+    """vehicles 폴더 내부 및 모든 하위 폴더의 .ini 파일을 탐색합니다."""
+    os.makedirs("vehicles", exist_ok=True)
+    path_pattern = os.path.join("vehicles", "**", "*.ini")
+    files = sorted(glob.glob(path_pattern, recursive=True))
+    
+    result = {}
+    for f in files:
+        # vehicles 폴더 기준의 상대 경로를 구함 (예: 한국노선\KTX.ini)
+        rel_path = os.path.relpath(f, "vehicles")
+        # 확장자 제거 및 UI 가독성을 위해 역슬래시(\)를 슬래시(/)로 변경
+        display_name = os.path.splitext(rel_path)[0].replace("\\", "/")
+        result[display_name] = os.path.abspath(f)
+    return result
 
 def tap(key):
     if not key: return
@@ -120,8 +131,9 @@ class App:
         self.running  = False
         self.vehicles = scan_vehicles()
 
+        # 차량 설정이 하나도 없으면 vehicles 폴더 안에 기본 파일 생성
         if not self.vehicles:
-            default_ini = "default_vehicle.ini"
+            default_ini = os.path.join("vehicles", "default_vehicle.ini")
             c = configparser.ConfigParser()
             c["Vehicle"] = {
                 "start_notch":  "N", 
@@ -440,13 +452,13 @@ class App:
         v    = self.vehicle.get()
         if "EB" in name or "제거" in name:
             color = RED
-        elif v == "CTA3200":
+        elif "CTA3200" in v:
             if name == "B4":               color = RED
             elif any(b in name for b in ["B1","B2","B3"]): color = ORANGE
             elif name in ("N","0","-"):    color = GREEN
             elif any(p in name for p in ["P1","P2","P3","P4","P5"]): color = BLUE
             else:                          color = FG
-        elif v == "Keihan8000":
+        elif "Keihan8000" in v:
             if name == "0":                color = GREEN
             elif name in ("-","N","+"):    color = PURPLE
             elif any(b in name for b in ["B1","B2","B3","B4","B5","B6","B7"]): color = ORANGE
@@ -704,7 +716,7 @@ class App:
                 else:
                     space_down = False
 
-                # ── [수정 및 버그 해결] 가독성 및 문법 규칙(SyntaxError) 우회 처리 ──
+                # 노치 가상 키 입력 연산 처리
                 if current_hardware_notch_idx != last_notch:
                     old, new = last_notch, current_hardware_notch_idx
                     try: pydirectinput.keyUp(k_p_up)
