@@ -4,14 +4,14 @@
 <picture>
   <source
     media="(prefers-color-scheme: dark)"
-    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
+    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico"
   >
   <source
     media="(prefers-color-scheme: light)"
-    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
+    srcset="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico"
   >
   <img
-    src="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico?token=GHSAT0AAAAAAEBXZZSRW5WEKMR7DFAKT7C42SJDBUQ"
+    src="https://raw.githubusercontent.com/HYB1022/TS_controller/refs/heads/main/imgs/icon.ico"
     width="600"
     alt="TS_Controller"
   >
