@@ -20,7 +20,7 @@
 ### TrainSimulator Controller
 
 [![GitHub Release](https://img.shields.io/github/v/release/HYB1022/Ts_Controller?include_prereleases)](https://github.com/HYB1022/TS_controller/releases)
-[<img src="https://img.shields.io/badge/프로젝트 기간-2026.6.27~-fab2ac?style=flat&logo=&logoColor=white" />]()
+[<img src="https://img.shields.io/badge/프로젝트 기간-2026.6.27~-fab2ac?style=flat&logo=&logoColor=white" />](https://github.com/HYB1022/TS_controller)
 
 </div> 
 위 단추들이 제대로 표시되지 않는다면, 페이지를 새로고침 하거나, 잠시 후에 다시 접속 하십시오.
