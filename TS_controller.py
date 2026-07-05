@@ -35,7 +35,7 @@ if not is_admin() and not DEBUGGER_RUNNING:
         print(f"관리자 권한 실행 실패: {e}")
     sys.exit(0)
 
-# ── 本文 ─────────────────────────────────────────────────────
+# ── 본문 ─────────────────────────────────────────────────────
 import tkinter as tk
 from tkinter import ttk
 import threading, pygame, pydirectinput, configparser, time, glob

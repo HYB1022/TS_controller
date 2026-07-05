@@ -52,7 +52,7 @@ class ButtonChecker:
             self.running = True
             threading.Thread(target=self.loop, daemon=True).start()
         else:
-            self.lbl_status.config(text="🔴 인식된 조イス틱(마스콘)이 없습니다.", fg="#e84118")
+            self.lbl_status.config(text="🔴 인식된 조이스틱(마스콘)이 없습니다.", fg="#e84118")
 
         self.root.mainloop()
 
