@@ -715,22 +715,23 @@ class App:
                 if notch_state in NOTCH:
                     raw_notch_idx = NOTCH[notch_state]
                     
-                    # 읽어온 값이 설정된 한계치를 초과하는 하드웨어적 바깥 영역일 경우
                     if raw_notch_idx > max_p: 
                         raw_notch_idx = max_p
                     if raw_notch_idx < max_b: 
                         raw_notch_idx = max_b
                         
                     current_hardware_notch_idx = raw_notch_idx
+                    # 물리 접점이 확실하게 매칭되었을 때만 동기화 후보로 인정
+                    valid_hardware_signal = True 
                 else:
-                    # 💡 접점이 떨어지는 과도기 구간 혹은 매핑되지 않은 완전 바깥 버튼 영역일 때 
-                    # 초기 중립(9)으로 복귀하는 대신, "기존에 누르고 있던 직전 물리 상태 정보"를 유지하여 고정시킵니다.
                     if last_notch > max_p:
                         current_hardware_notch_idx = max_p
                     elif last_notch < max_b:
                         current_hardware_notch_idx = max_b
                     else:
                         current_hardware_notch_idx = last_notch
+                    # 접점이 끊긴 과도기 상태에서는 동기화 체크를 하지 않음
+                    valid_hardware_signal = False 
 
                 # 3. 안전망 동기화 체크
                 if not reverser_matched:
@@ -739,7 +740,8 @@ class App:
                         self.write("✅ 역전기 장치 동기화 셋업 성공!", "ok")
                 
                 if not notch_matched:
-                    if current_hardware_notch_idx == target_start_notch:
+                    # 보정된 유지 값이 아니라, "실제 하드웨어 신호"가 시작 노치와 정확히 일치할 때만 통과
+                    if valid_hardware_signal and current_hardware_notch_idx == target_start_notch:
                         notch_matched = True
                         self.write("✅ 마스콘 주 레버 동기화 셋업 성공!", "ok")
 
