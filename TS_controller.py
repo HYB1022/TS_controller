@@ -37,7 +37,7 @@ if not is_admin() and not DEBUGGER_RUNNING:
 
 # ── 본문 ─────────────────────────────────────────────────────
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, font as tk_font
 import threading, pygame, pydirectinput, configparser, time, glob
 import ctypes as _ctypes
 
@@ -45,6 +45,24 @@ if hasattr(sys, '_MEIPASS'):
     icon_path = os.path.join(sys._MEIPASS, "imgs/icon.ico")
 else:
     icon_path = "imgs/icon.ico"
+
+# ── 나눔고딕 폰트 로드 (fonts/ 폴더 우선, 없으면 시스템 폴백) ──
+def _load_nanum_fonts():
+    FR_PRIVATE  = 0x10
+    FR_NOT_ENUM = 0x20
+    if getattr(sys, '_MEIPASS', None):
+        base = sys._MEIPASS
+    else:
+        base = os.path.dirname(os.path.abspath(__file__))
+    loaded = 0
+    for fname in ("NanumGothic-Regular.ttf", "NanumGothic-Bold.ttf"):
+        fpath = os.path.join(base, "fonts", fname)
+        if os.path.exists(fpath):
+            result = _ctypes.windll.gdi32.AddFontResourceExW(fpath, FR_PRIVATE | FR_NOT_ENUM, 0)
+            if result: loaded += 1
+    return loaded
+
+_nanum_loaded = _load_nanum_fonts()
 
 def _is_key_pressed(vk_code):
     return bool(_ctypes.windll.user32.GetAsyncKeyState(vk_code) & 0x8000)
@@ -61,8 +79,16 @@ NOTCH = {
 }
 START_MAP = {"EB":0,"B8":1,"B7":2,"B6":3,"B5":4,"B4":5,"B3":6,"B2":7,"B1":8,"N":9,"0":9}
 
-# ── 폰트 환경 통합 (한/영 모두 나눔고딕으로 지정) ──
-F_MAIN = "나눔고딕"
+# ── 폰트 환경 통합 (나눔고딕 우선, 없으면 시스템 폴백) ──────
+if _nanum_loaded > 0:
+    F_MAIN = "NanumGothic"
+else:
+    _r = tk.Tk(); _r.withdraw()
+    _avail = tk_font.families(_r); _r.destroy()
+    if "나눔고딕" in _avail:        F_MAIN = "나눔고딕"
+    elif "NanumGothic" in _avail:   F_MAIN = "NanumGothic"
+    elif "맑은 고딕" in _avail:     F_MAIN = "맑은 고딕"
+    else:                            F_MAIN = "Segoe UI"
 
 # 색상 팔레트
 BG       = "#16181d"
