@@ -47,12 +47,6 @@ if exist "dist" (
     xcopy /e /i /y "vehicles" "dist\vehicles" >nul
 )
 
-:: 5. fonts 폴더를 dist 옆에도 복사 (비동결 환경 대비)
-if exist "dist" (
-    echo [3/3] fonts 폴더를 dist 폴더로 복사 중...
-    xcopy /e /i /y "fonts" "dist\fonts" >nul
-)
-
 echo ===================================================
 echo  Done!
 echo ===================================================
