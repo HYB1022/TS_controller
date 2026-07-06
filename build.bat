@@ -14,6 +14,8 @@ if exist "dist" (
 pyinstaller --clean --onefile --noconsole ^
     --icon="imgs\icon.ico" ^
     --add-data "imgs\icon.ico;imgs" ^
+    --add-data "fonts\NanumGothic-Regular.ttf;fonts" ^
+    --add-data "fonts\NanumGothic-Bold.ttf;fonts" ^
     --exclude-module tkinter.test ^
     --exclude-module pydoc ^
     --exclude-module unittest ^
@@ -32,17 +34,23 @@ echo ===================================================
 
 :: 3. 빌드 중간에 생성된 찌꺼기 임시 폴더(build) 및 설정 로그(.spec) 청소
 if exist "build" (
-    echo [1/2] 임시 작업용 build 폴더 삭제 중...
+    echo [1/3] 임시 작업용 build 폴더 삭제 중...
     rmdir /s /q "build"
 )
 if exist "TS_controller.spec" (
     del /f /q "TS_controller.spec"
 )
 
-:: 4. 현재 폴더에 있는 *.ini 차량 프로필 설정 파일들을 새로 만든 dist 폴더로 복사
+:: 4. vehicles 폴더 복사
 if exist "dist" (
-    echo [2/2] vehicles 폴더 및 하위 설정을 dist 폴더로 복사 중...
+    echo [2/3] vehicles 폴더 및 하위 설정을 dist 폴더로 복사 중...
     xcopy /e /i /y "vehicles" "dist\vehicles" >nul
+)
+
+:: 5. fonts 폴더를 dist 옆에도 복사 (비동결 환경 대비)
+if exist "dist" (
+    echo [3/3] fonts 폴더를 dist 폴더로 복사 중...
+    xcopy /e /i /y "fonts" "dist\fonts" >nul
 )
 
 echo ===================================================
