@@ -61,6 +61,9 @@ NOTCH = {
 }
 START_MAP = {"EB":0,"B8":1,"B7":2,"B6":3,"B5":4,"B4":5,"B3":6,"B2":7,"B1":8,"N":9,"0":9}
 
+# ── 폰트 환경 통합 (한/영 모두 나눔고딕으로 지정) ──
+F_MAIN = "나눔고딕"
+
 # 색상 팔레트
 BG       = "#16181d"
 PANEL    = "#1f2128"
@@ -115,7 +118,7 @@ def make_entry(parent, **kw):
         bg=ENTRY_BG, fg=FG, insertbackground=FG,
         bd=0, highlightthickness=1,
         highlightbackground=BORDER, highlightcolor=ACCENT,
-        font=("Segoe UI", 10), **kw)
+        font=(F_MAIN, 10), **kw)
 
 class App:
     def __init__(self):
@@ -148,6 +151,9 @@ class App:
         self.root.geometry("800x920") 
         self.root.configure(bg=BG)
         self.root.resizable(False, False)
+
+        # 시스템 전체 기본 폰트 나눔고딕으로 강제 고정
+        self.root.option_add("*Font", (F_MAIN, 10))
 
         try:
             if os.path.exists(icon_path):
@@ -204,23 +210,23 @@ class App:
         s = ttk.Style(self.root)
         s.theme_use("clam")
         s.configure(".", background=BG, foreground=FG, fieldbackground=ENTRY_BG, bordercolor=BORDER, troughcolor=PANEL, focuscolor=ACCENT)
-        s.configure("TCombobox", fieldbackground=ENTRY_BG, foreground=FG, background=ENTRY_BG, arrowcolor=ACCENT, bordercolor=BORDER, font=("Segoe UI", 10))
+        s.configure("TCombobox", fieldbackground=ENTRY_BG, foreground=FG, background=ENTRY_BG, arrowcolor=ACCENT, bordercolor=BORDER, font=(F_MAIN, 10))
         s.map("TCombobox", fieldbackground=[("readonly", ENTRY_BG)], foreground=[("readonly", FG)], selectbackground=[("readonly", ENTRY_BG)], selectforeground=[("readonly", FG)])
         s.configure("TScrollbar", background=BORDER, troughcolor=PANEL, bordercolor=PANEL, arrowcolor=FG_DIM)
         s.configure("TNotebook", background=BG, bordercolor=BORDER, thickness=1)
-        s.configure("TNotebook.Tab", background=PANEL, foreground=FG_DIM, bordercolor=BORDER, padding=[15, 6], font=("Segoe UI", 9, "bold"))
+        s.configure("TNotebook.Tab", background=PANEL, foreground=FG_DIM, bordercolor=BORDER, padding=[15, 6], font=(F_MAIN, 9, "bold"))
         s.map("TNotebook.Tab", background=[("selected", BG)], foreground=[("selected", ACCENT)], bordercolor=[("selected", BORDER)])
 
     def _section(self, parent, title):
         outer = tk.Frame(parent, bg=BG)
         outer.pack(fill="x", padx=16, pady=(0, 8))
-        tk.Label(outer, text=title.upper(), bg=BG, fg=ACCENT, font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(0,4))
+        tk.Label(outer, text=title.upper(), bg=BG, fg=ACCENT, font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0,4))
         inner = tk.Frame(outer, bg=PANEL, bd=0, highlightthickness=1, highlightbackground=BORDER)
         inner.pack(fill="x")
         return inner
 
     def _icon_btn(self, parent, text, cmd, color=BORDER, fg=FG, bold=False):
-        f = ("Segoe UI", 9, "bold") if bold else ("Segoe UI", 9)
+        f = (F_MAIN, 9, "bold") if bold else (F_MAIN, 9)
         b = tk.Button(parent, text=text, command=cmd, bg=color, fg=fg, activebackground=ACCENT, activeforeground=BG, relief="flat", font=f, padx=10, pady=4, cursor="hand2", bd=0)
         return b
 
@@ -237,8 +243,8 @@ class App:
     def build(self):
         hdr = tk.Frame(self.root, bg=BG)
         hdr.pack(fill="x", padx=16, pady=(14, 6))
-        tk.Label(hdr, text="TS", bg=BG, fg=ACCENT, font=("Segoe UI", 20, "bold")).pack(side="left")
-        tk.Label(hdr, text="  CONTROLLER", bg=BG, fg=FG_DIM, font=("Segoe UI", 20)).pack(side="left")
+        tk.Label(hdr, text="TS", bg=BG, fg=ACCENT, font=(F_MAIN, 20, "bold")).pack(side="left")
+        tk.Label(hdr, text="  CONTROLLER", bg=BG, fg=FG_DIM, font=(F_MAIN, 20)).pack(side="left")
         tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x", padx=16, pady=(0, 10))
 
         self.notebook = ttk.Notebook(self.root)
@@ -258,11 +264,11 @@ class App:
 
         lp = tk.Frame(self.root, bg=BG)
         lp.pack(fill="x", padx=16, pady=(0, 10), side="bottom")
-        tk.Label(lp, text="시스템 로그", bg=BG, fg=ACCENT, font=("Segoe UI", 8, "bold")).pack(anchor="w", pady=(0,4))
+        tk.Label(lp, text="시스템 로그", bg=BG, fg=ACCENT, font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0,4))
         lf = tk.Frame(lp, bg=PANEL, bd=0, highlightthickness=1, highlightbackground=BORDER)
         lf.pack(fill="both", expand=True)
 
-        self.log = tk.Text(lf, bg="#0e1014", fg="#9ca3af", insertbackground=FG, relief="flat", font=("Consolas", 9), height=5, wrap="word", state="disabled", padx=10, pady=8)
+        self.log = tk.Text(lf, bg="#0e1014", fg="#9ca3af", insertbackground=FG, relief="flat", font=(F_MAIN, 9), height=5, wrap="word", state="disabled", padx=10, pady=8)
         sb = ttk.Scrollbar(lf, command=self.log.yview)
         self.log.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y")
@@ -297,7 +303,7 @@ class App:
         cf.columnconfigure(3, weight=1)
 
         def lbl(t, r, c):
-            tk.Label(cf, text=t, bg=PANEL, fg=FG_DIM, font=("Segoe UI", 9)).grid(row=r, column=c, sticky="w", pady=4, padx=(0,6))
+            tk.Label(cf, text=t, bg=PANEL, fg=FG_DIM, font=(F_MAIN, 9)).grid(row=r, column=c, sticky="w", pady=4, padx=(0,6))
 
         lbl("시작 노치", 0, 0); self.e_start = make_entry(cf); self.e_start.grid(row=0, column=1, sticky="ew", ipady=4)
         lbl("시작 역전기", 0, 2)
@@ -312,9 +318,9 @@ class App:
         ph_row = tk.Frame(cf, bg=PANEL)
         ph_row.grid(row=3, column=0, columnspan=4, sticky="w", pady=(8,2))
         
-        self.cb_ph = tk.Checkbutton(ph_row, text="최대 가속 유지  (Power Hold)", variable=self.power_hold, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=("Segoe UI", 9), cursor="hand2")
+        self.cb_ph = tk.Checkbutton(ph_row, text="최대 가속 유지  (Power Hold)", variable=self.power_hold, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=(F_MAIN, 9), cursor="hand2")
         self.cb_ph.pack(side="left", padx=(0, 15))
-        self.cb_eb = tk.Checkbutton(ph_row, text="마지막 제동 단 도달 시 비상제동(EB) 자동 연동", variable=self.use_eb, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=("Segoe UI", 9), cursor="hand2")
+        self.cb_eb = tk.Checkbutton(ph_row, text="마지막 제동 단 도달 시 비상제동(EB) 자동 연동", variable=self.use_eb, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=(F_MAIN, 9), cursor="hand2")
         self.cb_eb.pack(side="left")
 
         tk.Frame(cf, bg=BORDER, height=1).grid(row=4, column=0, columnspan=4, sticky="ew", pady=8)
@@ -336,9 +342,9 @@ class App:
         def status_card(col, label, var):
             card = tk.Frame(df, bg=CARD, bd=0, highlightthickness=1, highlightbackground=BORDER)
             card.grid(row=0, column=col, sticky="ew", padx=4, pady=2)
-            tk.Label(card, text=label, bg=CARD, fg=FG_DIM, font=("Segoe UI", 8, "bold")).pack(anchor="w", padx=10, pady=(8,0))
+            tk.Label(card, text=label, bg=CARD, fg=FG_DIM, font=(F_MAIN, 8, "bold")).pack(anchor="w", padx=10, pady=(8,0))
             # 잘림 문제 수정: width 제거 또는 여유롭게 설정하여 텍스트가 끝까지 표시되게 방어
-            l = tk.Label(card, textvariable=var, bg=CARD, fg=FG, font=("Segoe UI", 16, "bold"), anchor="w")
+            l = tk.Label(card, textvariable=var, bg=CARD, fg=FG, font=(F_MAIN, 16, "bold"), anchor="w")
             l.pack(anchor="w", padx=10, pady=(0,8), fill="x")
             return l
 
@@ -354,8 +360,8 @@ class App:
         bf.columnconfigure(0, weight=1)
         bf.columnconfigure(1, weight=1)
 
-        tk.Button(bf, text="▶   컨트롤러 실행", command=self.start, bg=GREEN, fg=BG, font=("Segoe UI", 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#16a34a", activeforeground=BG).grid(row=0, column=0, sticky="ew", padx=(0,5))
-        tk.Button(bf, text="■   작동 정지", command=self.stop, bg=RED, fg="white", font=("Segoe UI", 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#b91c1c", activeforeground="white").grid(row=0, column=1, sticky="ew", padx=(5,0))
+        tk.Button(bf, text="▶   컨트롤러 실행", command=self.start, bg=GREEN, fg=BG, font=(F_MAIN, 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#16a34a", activeforeground=BG).grid(row=0, column=0, sticky="ew", padx=(0,5))
+        tk.Button(bf, text="■   작동 정지", command=self.stop, bg=RED, fg="white", font=(F_MAIN, 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#b91c1c", activeforeground="white").grid(row=0, column=1, sticky="ew", padx=(5,0))
 
     def _build_keys_tab(self):
         kp = self._section(self.tab_keys, "기본 레버 키 바인딩 매핑")
@@ -364,8 +370,8 @@ class App:
         for i in range(4): kf.columnconfigure(i, weight=1)
 
         def add_key_catcher(label, var, r, c):
-            tk.Label(kf, text=label, bg=PANEL, fg=FG_DIM, font=("Segoe UI", 9, "bold")).grid(row=r, column=c, sticky="w", pady=6, padx=(0, 6))
-            btn = tk.Button(kf, textvariable=var, width=12, bg=ENTRY_BG, fg=ACCENT, relief="solid", bd=1, font=("Consolas", 10, "bold"), cursor="hand2")
+            tk.Label(kf, text=label, bg=PANEL, fg=FG_DIM, font=(F_MAIN, 9, "bold")).grid(row=r, column=c, sticky="w", pady=6, padx=(0, 6))
+            btn = tk.Button(kf, textvariable=var, width=12, bg=ENTRY_BG, fg=ACCENT, relief="solid", bd=1, font=(F_MAIN, 10, "bold"), cursor="hand2")
             btn.grid(row=r, column=c+1, sticky="w", pady=6)
             btn.config(command=lambda b=btn, v=var: self._start_key_catch(b, v))
 
@@ -395,7 +401,7 @@ class App:
 
         guide = tk.Frame(self.tab_joy_bind, bg=CARD, highlightthickness=1, highlightbackground=BORDER)
         guide.pack(fill="x", padx=16, pady=(10, 0))
-        tk.Label(guide, text="🎮 무제한 동적 버튼 커스텀 가이드", bg=CARD, fg=ACCENT, font=("Segoe UI", 10, "bold")).pack(anchor="w", padx=12, pady=(8, 2))
+        tk.Label(guide, text="🎮 무제한 동적 버튼 커스텀 가이드", bg=CARD, fg=ACCENT, font=(F_MAIN, 10, "bold")).pack(anchor="w", padx=12, pady=(8, 2))
         info_text = (
             "• [➕ 새 버튼 매핑 추가] 버튼을 누르면 원하는 만큼 조이스틱 버튼 바인딩 행이 생성됩니다.\n"
             "• [물리 버튼 감지]를 누르고 조이스틱의 임의 기기 버튼을 딸깍 누르시면 고유 ID 번호가 들어갑니다.\n"
@@ -403,7 +409,7 @@ class App:
             "• 불필요해진 항목은 맨 우측의 빨간색 [X] 버튼을 누르면 즉시 실시간 제외 및 파괴 처리됩니다.\n"
             "※ 안전 보호망: 마스콘 단수 인식용 레버 신호 버튼(6, 7, 8, 9번)은 감지 대상에서 자동 필터링(무시)됩니다."
         )
-        tk.Label(guide, text=info_text, bg=CARD, fg=FG_DIM, font=("Segoe UI", 9), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+        tk.Label(guide, text=info_text, bg=CARD, fg=FG_DIM, font=(F_MAIN, 9), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
 
     def add_mapping_row(self, init_joy="", init_key=""):
         row_fr = tk.Frame(self.dyn_container, bg=PANEL, pady=4)
@@ -419,20 +425,20 @@ class App:
         v_joy.trace_add("write", update_disp_text)
         update_disp_text()
 
-        btn_catch = tk.Button(row_fr, textvariable=v_disp, width=15, bg=ENTRY_BG, fg=PURPLE, relief="solid", bd=1, font=("Consolas", 10, "bold"), cursor="hand2")
+        btn_catch = tk.Button(row_fr, textvariable=v_disp, width=15, bg=ENTRY_BG, fg=PURPLE, relief="solid", bd=1, font=(F_MAIN, 10, "bold"), cursor="hand2")
         btn_catch.pack(side="left", padx=(0, 10))
         btn_catch.config(command=lambda b=btn_catch, v=v_joy: self._start_joy_catch(b, v))
 
-        tk.Label(row_fr, text="➔   연동할 키보드 키 :", bg=PANEL, fg=FG_DIM, font=("Segoe UI", 9)).pack(side="left", padx=(0,6))
+        tk.Label(row_fr, text="➔   연동할 키보드 키 :", bg=PANEL, fg=FG_DIM, font=(F_MAIN, 9)).pack(side="left", padx=(0,6))
 
-        btn_key = tk.Button(row_fr, textvariable=v_key, width=12, bg=ENTRY_BG, fg=ACCENT, relief="solid", bd=1, font=("Consolas", 10, "bold"), cursor="hand2")
+        btn_key = tk.Button(row_fr, textvariable=v_key, width=12, bg=ENTRY_BG, fg=ACCENT, relief="solid", bd=1, font=(F_MAIN, 10, "bold"), cursor="hand2")
         btn_key.pack(side="left")
         btn_key.config(command=lambda b=btn_key, v=v_key: self._start_key_catch(b, v))
 
         item = {"joy_btn": v_joy, "key_out": v_key, "frame": row_fr, "display_var": v_disp}
         self.dyn_mappings.append(item)
 
-        btn_del = tk.Button(row_fr, text=" ✕ ", bg=PANEL, fg=RED, activebackground=RED, activeforeground="white", relief="flat", font=("Segoe UI", 9, "bold"), cursor="hand2", bd=0, padx=6)
+        btn_del = tk.Button(row_fr, text=" ✕ ", bg=PANEL, fg=RED, activebackground=RED, activeforeground="white", relief="flat", font=(F_MAIN, 9, "bold"), cursor="hand2", bd=0, padx=6)
         btn_del.pack(side="right")
         btn_del.config(command=lambda i=item: self.remove_mapping_row(i))
 
@@ -708,7 +714,6 @@ class App:
                 state = tuple(i for i in range(js.get_numbuttons()) if js.get_button(i))
                 notch_state = tuple(i for i in state if i in MASCON_BUTTONS)
                 
-                # 🔥 핵심 수정 유도 보정 구간
                 max_p = self.live_max_power_notch
                 max_b = self.live_max_brake_notch
                 
@@ -721,7 +726,6 @@ class App:
                         raw_notch_idx = max_b
                         
                     current_hardware_notch_idx = raw_notch_idx
-                    # 물리 접점이 확실하게 매칭되었을 때만 동기화 후보로 인정
                     valid_hardware_signal = True 
                 else:
                     if last_notch > max_p:
@@ -730,7 +734,6 @@ class App:
                         current_hardware_notch_idx = max_b
                     else:
                         current_hardware_notch_idx = last_notch
-                    # 접점이 끊긴 과도기 상태에서는 동기화 체크를 하지 않음
                     valid_hardware_signal = False 
 
                 # 3. 안전망 동기화 체크
@@ -740,7 +743,6 @@ class App:
                         self.write("✅ 역전기 장치 동기화 셋업 성공!", "ok")
                 
                 if not notch_matched:
-                    # 보정된 유지 값이 아니라, "실제 하드웨어 신호"가 시작 노치와 정확히 일치할 때만 통과
                     if valid_hardware_signal and current_hardware_notch_idx == target_start_notch:
                         notch_matched = True
                         self.write("✅ 마스콘 주 레버 동기화 셋업 성공!", "ok")
@@ -753,10 +755,6 @@ class App:
                     time.sleep(0.01)
                     continue
 
-                # ─────────────────────────────────────────────────────────
-                # 🔓 가상 제어 신호 게임 전송 구역
-                # ─────────────────────────────────────────────────────────
-                
                 # 역전기 가상 키 송출
                 if current_hardware_rev == "F":
                     if self.last_dir != "F":

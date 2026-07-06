@@ -5,7 +5,8 @@ import importlib.util
 REQUIRED_MODULES = {
     "pygame": "pygame",
     "pydirectinput": "pydirectinput",
-    "keyboard": "keyboard"
+    "keyboard": "keyboard",
+    "pyinstaller": "pyinstaller",
 }
 
 def check_and_install():
