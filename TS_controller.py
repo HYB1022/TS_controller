@@ -8,6 +8,19 @@ try:
 except Exception:
     pass
 
+# ── DPI 인식 설정 (125%/150% 등 배율에서 창이 커지거나 잘리는 문제 방지) ──
+# Per-Monitor DPI Aware V2 (Windows 10 1703+) → 실패 시 System Aware 로 폴백
+try:
+    ctypes.windll.shcore.SetProcessDpiAwareness(2)   # PROCESS_PER_MONITOR_DPI_AWARE_V2
+except Exception:
+    try:
+        ctypes.windll.shcore.SetProcessDpiAwareness(1)  # PROCESS_SYSTEM_DPI_AWARE
+    except Exception:
+        try:
+            ctypes.windll.user32.SetProcessDPIAware()   # 구형 Windows 폴백
+        except Exception:
+            pass
+
 # ── 경로 수정 (UAC 후 작업 디렉토리 변경 방지) ──────────────
 if getattr(sys, 'frozen', False):
     current_dir = os.path.dirname(sys.executable)
@@ -279,14 +292,17 @@ class App:
         self.tab_main = tk.Frame(self.notebook, bg=BG)
         self.tab_keys = tk.Frame(self.notebook, bg=BG)
         self.tab_joy_bind = tk.Frame(self.notebook, bg=BG)
+        self.tab_about = tk.Frame(self.notebook, bg=BG)
 
         self.notebook.add(self.tab_main, text="메인 제어")
         self.notebook.add(self.tab_keys, text="키 바인딩 설정")
         self.notebook.add(self.tab_joy_bind, text="컨트롤러 버튼 매핑")
+        self.notebook.add(self.tab_about, text="정보")
 
         self._build_main_tab()
         self._build_keys_tab()
         self._build_joy_bind_tab()
+        self._build_about_tab()
 
         lp = tk.Frame(self.root, bg=BG)
         lp.pack(fill="x", padx=16, pady=(0, 10), side="bottom")
@@ -436,6 +452,67 @@ class App:
             "※ 안전 보호망: 마스콘 단수 인식용 레버 신호 버튼(6, 7, 8, 9번)은 감지 대상에서 자동 필터링(무시)됩니다."
         )
         tk.Label(guide, text=info_text, bg=CARD, fg=FG_DIM, font=(F_MAIN, 9), justify="left").pack(anchor="w", padx=12, pady=(0, 8))
+
+    def _build_about_tab(self):
+        tab = self.tab_about
+
+        # 상단 로고/타이틀 영역
+        hero = tk.Frame(tab, bg=CARD, highlightthickness=1, highlightbackground=BORDER)
+        hero.pack(fill="x", padx=16, pady=(16, 0))
+
+        tk.Label(hero, text="TS CONTROLLER",
+                 bg=CARD, fg=ACCENT, font=(F_MAIN, 22, "bold")).pack(pady=(20, 4))
+        tk.Label(hero, text="Train Simulator Joystick Controller for BVE Trainsim",
+                 bg=CARD, fg=FG_DIM, font=(F_MAIN, 10)).pack()
+        tk.Label(hero, text="v1.0.2  |  © 2026 HYB1022  ",
+                 bg=CARD, fg=FG_DIM, font=(F_MAIN, 9)).pack(pady=(2, 20))
+
+        # 소개
+        def section_card(title, rows):
+            """title + (label, value) 행 목록을 카드로 렌더링"""
+            outer = tk.Frame(tab, bg=BG)
+            outer.pack(fill="x", padx=16, pady=(10, 0))
+            tk.Label(outer, text=title.upper(), bg=BG, fg=ACCENT,
+                     font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0, 4))
+            card = tk.Frame(outer, bg=PANEL, highlightthickness=1, highlightbackground=BORDER)
+            card.pack(fill="x")
+            card.columnconfigure(1, weight=1)
+            for r, (lbl, val) in enumerate(rows):
+                tk.Label(card, text=lbl, bg=PANEL, fg=FG_DIM,
+                         font=(F_MAIN, 9), width=16, anchor="e").grid(
+                    row=r, column=0, sticky="e", padx=(12, 8), pady=5)
+                tk.Label(card, text=val, bg=PANEL, fg=FG,
+                         font=(F_MAIN, 9), anchor="w", justify="left").grid(
+                    row=r, column=1, sticky="w", padx=(0, 12), pady=5)
+            return card
+
+        section_card("프로그램 소개", [
+            ("이름",     "TS Controller"),
+            ("용도",     "산잉중공 OHC-PC01 물리 조이스틱 마스콘 · 역전기 연동"),
+            ("지원 방식", "원핸들(onehandle) / 투핸들(twohandle)"),
+            ("라이선스",  "미정"),
+        ])
+
+        section_card("주요 기능", [
+            ("차량 프로필",   "vehicles/ 폴더의 INI 파일 자동 스캔 · 무제한 차량 추가"),
+            ("키 바인딩",    "가속 / 제동 / EB / 역전기 / 기타 키 자유 변경"),
+            ("버튼 매핑",    "조이스틱 물리 버튼 → 가상 키보드 동적 매핑 (무제한)"),
+            ("Power Hold",  "최대 가속 노치 유지 키 자동 홀드 (차량별 설정)"),
+            ("EB 연동",     "최대 제동 도달 시 비상제동(EB) 키 자동 호출"),
+            ("역전기 지원",  "조이스틱 아날로그 축 → 전진 / 중립 / 후진 자동 변환"),
+            ("보정 기능",   "Left Ctrl 키로 중립 노치 실시간 재보정"),
+        ])
+
+        section_card("개발 환경", [
+            ("언어",      "Python 3.13"),
+            ("GUI",      "tkinter (다크 테마 커스텀)"),
+            ("입력 처리",  "pygame  ·  pydirectinput"),
+            ("빌드",      "PyInstaller + UPX 경량화"),
+            ("저장소",    "github.com/HYB1022/TS_controller"),
+        ])
+
+        # 하단 여백
+        tk.Frame(tab, bg=BG, height=16).pack()
 
     def add_mapping_row(self, init_joy="", init_key=""):
         row_fr = tk.Frame(self.dyn_container, bg=PANEL, pady=4)
