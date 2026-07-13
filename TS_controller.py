@@ -462,9 +462,9 @@ class App:
 
         tk.Label(hero, text="TS CONTROLLER",
                  bg=CARD, fg=ACCENT, font=(F_MAIN, 22, "bold")).pack(pady=(20, 4))
-        tk.Label(hero, text="Train Simulator Joystick Controller for BVE Trainsim",
+        tk.Label(hero, text="Train Simulator Joystick Controller for Any Train Simulator",
                  bg=CARD, fg=FG_DIM, font=(F_MAIN, 10)).pack()
-        tk.Label(hero, text="v1.0.2  |  © 2026 HYB1022  ",
+        tk.Label(hero, text="v1.0.3  |  © 2026 HYB1022  ",
                  bg=CARD, fg=FG_DIM, font=(F_MAIN, 9)).pack(pady=(2, 20))
 
         # 소개
