@@ -103,20 +103,20 @@ else:
     elif "맑은 고딕" in _avail:     F_MAIN = "맑은 고딕"
     else:                            F_MAIN = "Segoe UI"
 
-# 색상 팔레트
-BG       = "#16181d"
-PANEL    = "#1f2128"
-CARD     = "#252830"
-BORDER   = "#2e3240"
-ACCENT   = "#00c2cc"
-FG       = "#e2e4ea"
-FG_DIM   = "#6b7280"
-ENTRY_BG = "#2a2d37"
-GREEN    = "#22c55e"
-ORANGE   = "#f59e0b"
-RED      = "#ef4444"
-BLUE     = "#3b82f6"
-PURPLE   = "#a78bfa"
+# 색상 팔레트 (모던 플랫)
+BG       = "#f0f2f5"   # 전체 배경 (연한 회색)
+PANEL    = "#ffffff"   # 카드/패널 (흰색)
+CARD     = "#f8f9fb"   # 내부 카드 (아주 연한 회색)
+BORDER   = "#e2e6ea"   # 테두리
+ACCENT   = "#2563eb"   # 파란색 강조 (Windows 11 스타일)
+FG       = "#1e2530"   # 기본 텍스트 (거의 검정)
+FG_DIM   = "#8b95a1"   # 흐린 텍스트
+ENTRY_BG = "#f0f2f5"   # 입력 배경
+GREEN    = "#16a34a"   # 초록
+ORANGE   = "#d97706"   # 주황
+RED      = "#dc2626"   # 빨강
+BLUE     = "#2563eb"   # 파랑
+PURPLE   = "#7c3aed"   # 보라
 
 KEY_MAP_FIX = {
     "space": "space", "return": "enter", "escape": "esc", "backspace": "backspace",
@@ -187,7 +187,7 @@ class App:
 
         self.root = tk.Tk()
         self.root.title("TS Controller")
-        self.root.geometry("800x920") 
+        self.root.geometry("800x860") 
         self.root.configure(bg=BG)
         self.root.resizable(False, False)
 
@@ -248,25 +248,51 @@ class App:
     def _apply_style(self):
         s = ttk.Style(self.root)
         s.theme_use("clam")
-        s.configure(".", background=BG, foreground=FG, fieldbackground=ENTRY_BG, bordercolor=BORDER, troughcolor=PANEL, focuscolor=ACCENT)
-        s.configure("TCombobox", fieldbackground=ENTRY_BG, foreground=FG, background=ENTRY_BG, arrowcolor=ACCENT, bordercolor=BORDER, font=(F_MAIN, 10))
-        s.map("TCombobox", fieldbackground=[("readonly", ENTRY_BG)], foreground=[("readonly", FG)], selectbackground=[("readonly", ENTRY_BG)], selectforeground=[("readonly", FG)])
-        s.configure("TScrollbar", background=BORDER, troughcolor=PANEL, bordercolor=PANEL, arrowcolor=FG_DIM)
-        s.configure("TNotebook", background=BG, bordercolor=BORDER, thickness=1)
-        s.configure("TNotebook.Tab", background=PANEL, foreground=FG_DIM, bordercolor=BORDER, padding=[15, 6], font=(F_MAIN, 9, "bold"))
-        s.map("TNotebook.Tab", background=[("selected", BG)], foreground=[("selected", ACCENT)], bordercolor=[("selected", BORDER)])
+        s.configure(".", background=BG, foreground=FG,
+                    fieldbackground=ENTRY_BG, bordercolor=BORDER,
+                    troughcolor=BORDER, focuscolor=ACCENT)
+        s.configure("TCombobox",
+                    fieldbackground=ENTRY_BG, foreground=FG,
+                    background=PANEL, arrowcolor=ACCENT,
+                    bordercolor=BORDER, font=(F_MAIN, 10))
+        s.map("TCombobox",
+              fieldbackground=[("readonly", ENTRY_BG)],
+              foreground=[("readonly", FG)],
+              selectbackground=[("readonly", ENTRY_BG)],
+              selectforeground=[("readonly", FG)])
+        s.configure("TScrollbar",
+                    background=BORDER, troughcolor=CARD,
+                    bordercolor=BORDER, arrowcolor=FG_DIM)
+        s.configure("TNotebook",
+                    background=BG, bordercolor=BORDER, thickness=0)
+        s.configure("TNotebook.Tab",
+                    background=BG, foreground=FG_DIM,
+                    bordercolor=BORDER, padding=[18, 8],
+                    font=(F_MAIN, 9, "bold"))
+        s.map("TNotebook.Tab",
+              background=[("selected", PANEL)],
+              foreground=[("selected", ACCENT)])
 
     def _section(self, parent, title):
         outer = tk.Frame(parent, bg=BG)
-        outer.pack(fill="x", padx=16, pady=(0, 8))
-        tk.Label(outer, text=title.upper(), bg=BG, fg=ACCENT, font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0,4))
-        inner = tk.Frame(outer, bg=PANEL, bd=0, highlightthickness=1, highlightbackground=BORDER)
+        outer.pack(fill="x", padx=16, pady=(0, 10))
+        tk.Label(outer, text=title, bg=BG, fg=FG_DIM,
+                 font=(F_MAIN, 9, "bold")).pack(anchor="w", pady=(0, 4))
+        inner = tk.Frame(outer, bg=PANEL, bd=0,
+                         highlightthickness=1, highlightbackground=BORDER)
         inner.pack(fill="x")
         return inner
 
     def _icon_btn(self, parent, text, cmd, color=BORDER, fg=FG, bold=False):
         f = (F_MAIN, 9, "bold") if bold else (F_MAIN, 9)
-        b = tk.Button(parent, text=text, command=cmd, bg=color, fg=fg, activebackground=ACCENT, activeforeground=BG, relief="flat", font=f, padx=10, pady=4, cursor="hand2", bd=0)
+        is_accent = (color == ACCENT)
+        act_bg = "#1d4ed8" if is_accent else "#e2e6ea"
+        act_fg = PANEL if is_accent else FG
+        b = tk.Button(parent, text=text, command=cmd,
+                      bg=color, fg=fg,
+                      activebackground=act_bg, activeforeground=act_fg,
+                      relief="flat", font=f,
+                      padx=12, pady=5, cursor="hand2", bd=0)
         return b
 
     def update_live_vars(self):
@@ -281,11 +307,44 @@ class App:
 
     def build(self):
         hdr = tk.Frame(self.root, bg=BG)
-        hdr.pack(fill="x", padx=16, pady=(14, 6))
-        tk.Label(hdr, text="TS", bg=BG, fg=ACCENT, font=(F_MAIN, 20, "bold")).pack(side="left")
-        tk.Label(hdr, text="  CONTROLLER", bg=BG, fg=FG_DIM, font=(F_MAIN, 20)).pack(side="left")
-        tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x", padx=16, pady=(0, 10))
+        hdr.pack(fill="x", padx=20, pady=(16, 0))
 
+        # 타이틀 배지
+        badge = tk.Frame(hdr, bg=ACCENT)
+        badge.pack(side="left")
+        tk.Label(badge, text="  TS  ", bg=ACCENT, fg=PANEL,
+                 font=(F_MAIN, 14, "bold"), pady=4).pack()
+
+        tk.Label(hdr, text="  Controller", bg=BG, fg=FG,
+                 font=(F_MAIN, 16, "bold")).pack(side="left")
+
+        tk.Frame(self.root, bg=BORDER, height=1).pack(fill="x", padx=20, pady=(10, 8))
+
+        # ── 로그 먼저 bottom에 고정 → notebook이 나머지 공간 채움 ──
+        lp = tk.Frame(self.root, bg=BG)
+        lp.pack(fill="x", padx=16, pady=(2, 6), side="bottom")
+        tk.Label(lp, text="시스템 로그", bg=BG, fg=FG_DIM,
+                 font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0, 4))
+        lf = tk.Frame(lp, bg=PANEL, bd=0,
+                      highlightthickness=1, highlightbackground=BORDER)
+        lf.pack(fill="both", expand=True)
+
+        self.log = tk.Text(lf, bg=CARD, fg=FG_DIM, insertbackground=FG,
+                           relief="flat", font=(F_MAIN, 9),
+                           height=5, wrap="word", state="disabled",
+                           padx=10, pady=8)
+        sb = ttk.Scrollbar(lf, command=self.log.yview)
+        self.log.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        self.log.pack(fill="both", expand=True)
+
+        self.log.tag_config("notch", foreground=ACCENT)
+        self.log.tag_config("ok",    foreground=GREEN)
+        self.log.tag_config("warn",  foreground=ORANGE)
+        self.log.tag_config("err",   foreground=RED)
+        self.log.tag_config("",      foreground=FG_DIM)
+
+        # ── notebook은 로그 아래에 선언해야 나머지 공간을 채움 ──
         self.notebook = ttk.Notebook(self.root)
         self.notebook.pack(fill="both", expand=True, padx=16)
 
@@ -303,23 +362,6 @@ class App:
         self._build_keys_tab()
         self._build_joy_bind_tab()
         self._build_about_tab()
-
-        lp = tk.Frame(self.root, bg=BG)
-        lp.pack(fill="x", padx=16, pady=(0, 10), side="bottom")
-        tk.Label(lp, text="시스템 로그", bg=BG, fg=ACCENT, font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0,4))
-        lf = tk.Frame(lp, bg=PANEL, bd=0, highlightthickness=1, highlightbackground=BORDER)
-        lf.pack(fill="both", expand=True)
-
-        self.log = tk.Text(lf, bg="#0e1014", fg="#9ca3af", insertbackground=FG, relief="flat", font=(F_MAIN, 9), height=5, wrap="word", state="disabled", padx=10, pady=8)
-        sb = ttk.Scrollbar(lf, command=self.log.yview)
-        self.log.configure(yscrollcommand=sb.set)
-        sb.pack(side="right", fill="y")
-        self.log.pack(fill="both", expand=True)
-
-        self.log.tag_config("notch", foreground=ACCENT)
-        self.log.tag_config("ok",    foreground=GREEN)
-        self.log.tag_config("warn",  foreground=ORANGE)
-        self.log.tag_config("err",   foreground=RED)
 
         self.update_notch_color()
         self.update_reverser_color()
@@ -360,9 +402,23 @@ class App:
         ph_row = tk.Frame(cf, bg=PANEL)
         ph_row.grid(row=3, column=0, columnspan=4, sticky="w", pady=(8,2))
         
-        self.cb_ph = tk.Checkbutton(ph_row, text="최대 가속 유지  (Power Hold)", variable=self.power_hold, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=(F_MAIN, 9), cursor="hand2")
-        self.cb_ph.pack(side="left", padx=(0, 15))
-        self.cb_eb = tk.Checkbutton(ph_row, text="마지막 제동 단 도달 시 비상제동(EB) 자동 연동", variable=self.use_eb, bg=PANEL, fg=FG, activebackground=PANEL, activeforeground=ACCENT, selectcolor=ENTRY_BG, font=(F_MAIN, 9), cursor="hand2")
+        self.cb_ph = tk.Checkbutton(ph_row,
+            text="최대 가속 유지  (Power Hold)",
+            variable=self.power_hold,
+            bg=PANEL, fg=FG,
+            activebackground=PANEL, activeforeground=ACCENT,
+            selectcolor=PANEL,
+            font=(F_MAIN, 10), cursor="hand2",
+            indicatoron=True)
+        self.cb_ph.pack(side="left", padx=(0, 20))
+        self.cb_eb = tk.Checkbutton(ph_row,
+            text="마지막 제동 단 도달 시 비상제동(EB) 자동 연동",
+            variable=self.use_eb,
+            bg=PANEL, fg=FG,
+            activebackground=PANEL, activeforeground=ACCENT,
+            selectcolor=PANEL,
+            font=(F_MAIN, 10), cursor="hand2",
+            indicatoron=True)
         self.cb_eb.pack(side="left")
 
         tk.Frame(cf, bg=BORDER, height=1).grid(row=4, column=0, columnspan=4, sticky="ew", pady=8)
@@ -382,12 +438,14 @@ class App:
         df.columnconfigure(2, weight=1)
 
         def status_card(col, label, var):
-            card = tk.Frame(df, bg=CARD, bd=0, highlightthickness=1, highlightbackground=BORDER)
+            card = tk.Frame(df, bg=PANEL, bd=0,
+                            highlightthickness=1, highlightbackground=BORDER)
             card.grid(row=0, column=col, sticky="ew", padx=4, pady=2)
-            tk.Label(card, text=label, bg=CARD, fg=FG_DIM, font=(F_MAIN, 8, "bold")).pack(anchor="w", padx=10, pady=(8,0))
-            # 잘림 문제 수정: width 제거 또는 여유롭게 설정하여 텍스트가 끝까지 표시되게 방어
-            l = tk.Label(card, textvariable=var, bg=CARD, fg=FG, font=(F_MAIN, 16, "bold"), anchor="w")
-            l.pack(anchor="w", padx=10, pady=(0,8), fill="x")
+            tk.Label(card, text=label, bg=PANEL, fg=FG_DIM,
+                     font=(F_MAIN, 8)).pack(anchor="w", padx=12, pady=(10, 2))
+            l = tk.Label(card, textvariable=var, bg=PANEL, fg=FG,
+                         font=(F_MAIN, 18, "bold"), anchor="w")
+            l.pack(anchor="w", padx=12, pady=(0, 10), fill="x")
             return l
 
         status_card(0, "JOYSTICK", self.joy)
@@ -398,12 +456,21 @@ class App:
         self.reverser.trace_add("write", self.update_reverser_color)
 
         bf = tk.Frame(self.tab_main, bg=BG)
-        bf.pack(fill="x", padx=16, pady=(4, 0))
+        bf.pack(fill="x", padx=16, pady=(4, 4))
         bf.columnconfigure(0, weight=1)
         bf.columnconfigure(1, weight=1)
 
-        tk.Button(bf, text="▶   컨트롤러 실행", command=self.start, bg=GREEN, fg=BG, font=(F_MAIN, 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#16a34a", activeforeground=BG).grid(row=0, column=0, sticky="ew", padx=(0,5))
-        tk.Button(bf, text="■   작동 정지", command=self.stop, bg=RED, fg="white", font=(F_MAIN, 11, "bold"), relief="flat", pady=9, cursor="hand2", activebackground="#b91c1c", activeforeground="white").grid(row=0, column=1, sticky="ew", padx=(5,0))
+        tk.Button(bf, text="▶   컨트롤러 실행", command=self.start,
+                  bg=ACCENT, fg=PANEL, font=(F_MAIN, 10, "bold"),
+                  relief="flat", pady=10, cursor="hand2",
+                  activebackground="#1d4ed8", activeforeground=PANEL
+                  ).grid(row=0, column=0, sticky="ew", padx=(0, 6))
+        tk.Button(bf, text="■   작동 정지", command=self.stop,
+                  bg=CARD, fg=RED, font=(F_MAIN, 10, "bold"),
+                  relief="flat", pady=10, cursor="hand2",
+                  highlightthickness=1, highlightbackground=BORDER,
+                  activebackground=BORDER, activeforeground=RED
+                  ).grid(row=0, column=1, sticky="ew", padx=(6, 0))
 
     def _build_keys_tab(self):
         kp = self._section(self.tab_keys, "기본 레버 키 바인딩 매핑")
@@ -456,23 +523,42 @@ class App:
     def _build_about_tab(self):
         tab = self.tab_about
 
-        # 상단 로고/타이틀 영역
-        hero = tk.Frame(tab, bg=CARD, highlightthickness=1, highlightbackground=BORDER)
-        hero.pack(fill="x", padx=16, pady=(16, 0))
+        # ── 스크롤 가능한 캔버스 구성 ──
+        canvas = tk.Canvas(tab, bg=BG, bd=0, highlightthickness=0)
+        sb = ttk.Scrollbar(tab, orient="vertical", command=canvas.yview)
+        canvas.configure(yscrollcommand=sb.set)
+        sb.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
 
+        inner = tk.Frame(canvas, bg=BG)
+        inner_id = canvas.create_window((0, 0), window=inner, anchor="nw")
+
+        def on_resize(e):
+            canvas.itemconfig(inner_id, width=e.width)
+        canvas.bind("<Configure>", on_resize)
+
+        def on_content_change(e):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+        inner.bind("<Configure>", on_content_change)
+
+        def on_mousewheel(e):
+            canvas.yview_scroll(int(-1 * (e.delta / 120)), "units")
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+
+        # 히어로
+        hero = tk.Frame(inner, bg=CARD, highlightthickness=1, highlightbackground=BORDER)
+        hero.pack(fill="x", padx=16, pady=(16, 0))
         tk.Label(hero, text="TS CONTROLLER",
                  bg=CARD, fg=ACCENT, font=(F_MAIN, 22, "bold")).pack(pady=(20, 4))
         tk.Label(hero, text="Train Simulator Joystick Controller for Any Train Simulator",
                  bg=CARD, fg=FG_DIM, font=(F_MAIN, 10)).pack()
-        tk.Label(hero, text="v1.0.3  |  © 2026 HYB1022  ",
+        tk.Label(hero, text="v1.0.4  |  © 2026 HYB1022",
                  bg=CARD, fg=FG_DIM, font=(F_MAIN, 9)).pack(pady=(2, 20))
 
-        # 소개
         def section_card(title, rows):
-            """title + (label, value) 행 목록을 카드로 렌더링"""
-            outer = tk.Frame(tab, bg=BG)
+            outer = tk.Frame(inner, bg=BG)
             outer.pack(fill="x", padx=16, pady=(10, 0))
-            tk.Label(outer, text=title.upper(), bg=BG, fg=ACCENT,
+            tk.Label(outer, text=title, bg=BG, fg=FG_DIM,
                      font=(F_MAIN, 8, "bold")).pack(anchor="w", pady=(0, 4))
             card = tk.Frame(outer, bg=PANEL, highlightthickness=1, highlightbackground=BORDER)
             card.pack(fill="x")
@@ -484,7 +570,6 @@ class App:
                 tk.Label(card, text=val, bg=PANEL, fg=FG,
                          font=(F_MAIN, 9), anchor="w", justify="left").grid(
                     row=r, column=1, sticky="w", padx=(0, 12), pady=5)
-            return card
 
         section_card("프로그램 소개", [
             ("이름",     "TS Controller"),
@@ -494,25 +579,24 @@ class App:
         ])
 
         section_card("주요 기능", [
-            ("차량 프로필",   "vehicles/ 폴더의 INI 파일 자동 스캔 · 무제한 차량 추가"),
-            ("키 바인딩",    "가속 / 제동 / EB / 역전기 / 기타 키 자유 변경"),
-            ("버튼 매핑",    "조이스틱 물리 버튼 → 가상 키보드 동적 매핑 (무제한)"),
-            ("Power Hold",  "최대 가속 노치 유지 키 자동 홀드 (차량별 설정)"),
-            ("EB 연동",     "최대 제동 도달 시 비상제동(EB) 키 자동 호출"),
-            ("역전기 지원",  "조이스틱 아날로그 축 → 전진 / 중립 / 후진 자동 변환"),
-            ("보정 기능",   "Left Ctrl 키로 중립 노치 실시간 재보정"),
+            ("차량 프로필",  "vehicles/ 폴더의 INI 파일 자동 스캔 · 무제한 차량 추가"),
+            ("키 바인딩",   "가속 / 제동 / EB / 역전기 / 기타 키 자유 변경"),
+            ("버튼 매핑",   "조이스틱 물리 버튼 → 가상 키보드 동적 매핑 (무제한)"),
+            ("Power Hold", "최대 가속 노치 유지 키 자동 홀드 (차량별 설정)"),
+            ("EB 연동",    "최대 제동 도달 시 비상제동(EB) 키 자동 호출"),
+            ("역전기 지원", "조이스틱 아날로그 축 → 전진 / 중립 / 후진 자동 변환"),
+            ("보정 기능",  "Left Ctrl 키로 중립 노치 실시간 재보정"),
         ])
 
         section_card("개발 환경", [
-            ("언어",      "Python 3.13"),
-            ("GUI",      "tkinter (다크 테마 커스텀)"),
-            ("입력 처리",  "pygame  ·  pydirectinput"),
-            ("빌드",      "PyInstaller + UPX 경량화"),
-            ("저장소",    "github.com/HYB1022/TS_controller"),
+            ("언어",     "Python 3.13"),
+            ("GUI",     "tkinter (모던 플랫 테마 커스텀)"),
+            ("입력 처리", "pygame  ·  pydirectinput"),
+            ("빌드",     "PyInstaller + UPX 경량화"),
+            ("저장소",   "github.com/HYB1022/TS_controller"),
         ])
 
-        # 하단 여백
-        tk.Frame(tab, bg=BG, height=16).pack()
+        tk.Frame(inner, bg=BG, height=16).pack()
 
     def add_mapping_row(self, init_joy="", init_key=""):
         row_fr = tk.Frame(self.dyn_container, bg=PANEL, pady=4)
@@ -632,9 +716,9 @@ class App:
     def update_reverser_color(self, *args):
         if not hasattr(self, "lbl_reverser"): return
         val = self.reverser.get()
-        if val == "F": self.lbl_reverser.config(fg=BLUE)
-        elif val == "R": self.lbl_reverser.config(fg=ORANGE)
-        else: self.lbl_reverser.config(fg=GREEN)
+        if val == "F":   self.lbl_reverser.config(fg=ACCENT)
+        elif val == "R": self.lbl_reverser.config(fg=RED)
+        else:            self.lbl_reverser.config(fg=FG_DIM)
 
     def write(self, msg, tag=""):
         self.log.configure(state="normal")
