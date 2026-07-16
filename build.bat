@@ -16,6 +16,8 @@ pyinstaller --clean --onefile --noconsole ^
     --add-data "imgs\icon.ico;imgs" ^
     --add-data "fonts\NanumGothic-Regular.ttf;fonts" ^
     --add-data "fonts\NanumGothic-Bold.ttf;fonts" ^
+    --hidden-import sv_ttk ^
+    --collect-data sv_ttk ^
     --exclude-module tkinter.test ^
     --exclude-module pydoc ^
     --exclude-module unittest ^
