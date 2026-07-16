@@ -163,10 +163,240 @@ def load_notch_names(cfg):
     names = [n.strip() for n in raw.split(",")]
     return {i: names[i] for i in range(len(names))}
 
+# ── Windows 11 전용 창 특성 지정 헬퍼 함수 ──
+def apply_modern_window_attributes(window):
+    window.update_idletasks()
+    try:
+        hwnd = _ctypes.windll.user32.GetParent(window.winfo_id())
+        if not hwnd:
+            hwnd = window.winfo_id()
+        DWMWA_WINDOW_CORNER_PREFERENCE = 33
+        DWMWCP_ROUNDSMALL = 3
+        corner_pref = _ctypes.c_int(DWMWCP_ROUNDSMALL)
+        _ctypes.windll.dwmapi.DwmSetWindowAttribute(
+            hwnd, 
+            DWMWA_WINDOW_CORNER_PREFERENCE, 
+            _ctypes.byref(corner_pref), 
+            _ctypes.sizeof(corner_pref)
+        )
+    except Exception:
+        pass
+
+# ── 커스텀 오버레이 드롭다운 위젯 ──
+class ModernCombobox(tk.Frame):
+    def __init__(self, parent, textvariable, values, command=None):
+        super().__init__(parent)
+        self.textvariable = textvariable
+        self._values = list(values)
+        self.command = command
+        self.popdown = None
+        
+        self.inner_frame = tk.Frame(self, cursor="hand2")
+        self.inner_frame.pack(fill="both", expand=True, padx=1, pady=1)
+        
+        self.lbl_text = tk.Label(self.inner_frame, textvariable=self.textvariable, font=(F_MAIN, s(10)), anchor="w")
+        self.lbl_text.pack(side="left", padx=(s(8), s(4)), pady=s(4), fill="x", expand=True)
+        
+        self.lbl_chevron = tk.Label(self.inner_frame, text=" ∨ ", font=(F_MAIN, s(8)), anchor="e")
+        self.lbl_chevron.pack(side="right", padx=(s(4), s(8)), pady=s(4))
+        
+        for widget in (self.inner_frame, self.lbl_text, self.lbl_chevron):
+            widget.bind("<Button-1>", lambda e: self.show_dropdown())
+            widget.bind("<Enter>", self._on_enter)
+            widget.bind("<Leave>", self._on_leave)
+            
+        self.update_style()
+
+    def __setitem__(self, key, value):
+        if key == "values":
+            self._values = list(value)
+        else:
+            try: super().__setitem__(key, value)
+            except Exception: pass
+
+    def bind(self, event, callback):
+        if event == "<<ComboboxSelected>>":
+            self.command = callback
+        else:
+            try: super().bind(event, callback)
+            except Exception: pass
+
+    def get(self):
+        return self.textvariable.get()
+
+    def set(self, val):
+        self.textvariable.set(val)
+
+    def update_style(self):
+        theme = sv_ttk.get_theme()
+        if theme == "dark":
+            bg = "#2d2d2d"
+            fg = "#ffffff"
+            border = "#3d3d3d"
+            chevron_fg = "#aaaaaa"
+        else:
+            bg = "#ffffff"
+            fg = "#1a1a1a"
+            border = "#e5e5e5"
+            chevron_fg = "#666666"
+            
+        self.configure(bg=border) 
+        self.inner_frame.configure(bg=bg)
+        self.lbl_text.configure(bg=bg, fg=fg)
+        self.lbl_chevron.configure(bg=bg, fg=chevron_fg)
+
+    def _on_enter(self, event):
+        theme = sv_ttk.get_theme()
+        if theme == "dark":
+            hover_border = "#444444"
+            hover_bg = "#353535"
+        else:
+            hover_border = "#cccccc"
+            hover_bg = "#f7f7f7"
+        self.configure(bg=hover_border)
+        self.inner_frame.configure(bg=hover_bg)
+        self.lbl_text.configure(bg=hover_bg)
+        self.lbl_chevron.configure(bg=hover_bg)
+
+    def _on_leave(self, event):
+        self.update_style()
+
+    def show_dropdown(self):
+        if self.popdown and self.popdown.winfo_exists():
+            self.popdown.destroy()
+            self.popdown = None
+            return
+
+        theme = sv_ttk.get_theme()
+        if theme == "dark":
+            bg_color = "#202020"
+            border_color = "#303030"
+            unselected_hover = "#383838"
+            selected_bg = "#383838"
+            selected_hover = "#454545"
+            text_color = "#ffffff"
+            indicator_color = "#60cdff"
+        else:
+            bg_color = "#ffffff"
+            border_color = "#e5e5e5"
+            unselected_hover = "#e0e0e0"
+            selected_bg = "#e0e0e0"
+            selected_hover = "#ebebeb"
+            text_color = "#1a1a1a"
+            indicator_color = "#0067b8"
+
+        self.popdown = tk.Toplevel(self)
+        self.popdown.overrideredirect(True)
+        apply_modern_window_attributes(self.popdown)
+
+        container = tk.Frame(self.popdown, bg=bg_color, highlightbackground=border_color, highlightthickness=1)
+        container.pack(fill="both", expand=True)
+
+        current_val = self.textvariable.get()
+
+        self.update_idletasks()
+        x = self.winfo_rootx()
+        y = self.winfo_rooty()
+        w = self.winfo_width()
+
+        item_height = s(28)
+        num_items = len(self._values)
+        popup_height = num_items * item_height + s(8)
+
+        try:
+            selected_idx = self._values.index(current_val)
+        except ValueError:
+            selected_idx = 0
+
+        # 선택된 인덱스가 버튼을 덮도록 Y축 계산
+        offset = s(4) + (selected_idx * item_height)
+        target_y = y - offset
+
+        screen_height = self.winfo_screenheight()
+        if target_y < s(10):
+            target_y = s(10)
+        elif target_y + popup_height > screen_height - s(10):
+            target_y = screen_height - popup_height - s(10)
+
+        self.popdown.geometry(f"{w}x{popup_height}+{x}+{target_y}")
+
+        tk.Frame(container, bg=bg_color, height=s(4)).pack(fill="x")
+
+        for idx, val in enumerate(self._values):
+            is_selected = (val == current_val)
+            initial_bg = selected_bg if is_selected else bg_color
+
+            row_fr = tk.Frame(container, bg=initial_bg, cursor="hand2", height=item_height)
+            row_fr.pack(fill="x", padx=s(4))
+            row_fr.pack_propagate(False)
+
+            ind_color = indicator_color if is_selected else initial_bg
+            ind = tk.Frame(row_fr, bg=ind_color, width=s(3))
+            ind.pack(side="left", fill="y", padx=(s(4), s(8)), pady=s(4))
+
+            lbl = tk.Label(row_fr, text=val, bg=initial_bg, fg=text_color, font=(F_MAIN, s(10)), anchor="w")
+            lbl.pack(side="left", fill="both", expand=True)
+
+            def make_hover_enter(r, l, i, is_sel):
+                def handler(e):
+                    hover_bg = selected_hover if is_sel else unselected_hover
+                    r.configure(bg=hover_bg)
+                    l.configure(bg=hover_bg)
+                    i.configure(bg=indicator_color if is_sel else hover_bg)
+                return handler
+
+            def make_hover_leave(r, l, i, is_sel):
+                def handler(e):
+                    leave_bg = selected_bg if is_sel else bg_color
+                    r.configure(bg=leave_bg)
+                    l.configure(bg=leave_bg)
+                    i.configure(bg=indicator_color if is_sel else leave_bg)
+                return handler
+
+            def make_click(v):
+                def handler(e):
+                    self.textvariable.set(v)
+                    self.popdown.destroy()
+                    self.popdown = None
+                    if self.command:
+                        self.command(None)
+                return handler
+
+            row_fr.bind("<Enter>", make_hover_enter(row_fr, lbl, ind, is_selected))
+            row_fr.bind("<Leave>", make_hover_leave(row_fr, lbl, ind, is_selected))
+            row_fr.bind("<Button-1>", make_click(val))
+            lbl.bind("<Enter>", make_hover_enter(row_fr, lbl, ind, is_selected))
+            lbl.bind("<Leave>", make_hover_leave(row_fr, lbl, ind, is_selected))
+            lbl.bind("<Button-1>", make_click(val))
+
+        tk.Frame(container, bg=bg_color, height=s(4)).pack(fill="x")
+
+        def click_outside(event):
+            if self.popdown and self.popdown.winfo_exists():
+                cx, cy = event.x_root, event.y_root
+                px = self.popdown.winfo_rootx()
+                py = self.popdown.winfo_rooty()
+                pw = self.popdown.winfo_width()
+                ph = self.popdown.winfo_height()
+                if not (px <= cx <= px + pw and py <= cy <= py + ph):
+                    self.popdown.destroy()
+                    self.popdown = None
+
+        root_win = self.winfo_toplevel()
+        bind_id = root_win.bind("<Button-1>", click_outside, add="+")
+        
+        def on_destroy(event):
+            if event.widget == self.popdown:
+                root_win.unbind("<Button-1>", bind_id)
+        self.popdown.bind("<Destroy>", on_destroy)
+        self.popdown.bind("<FocusOut>", lambda e: [self.popdown.destroy() if self.popdown else None, setattr(self, "popdown", None)])
+
+
 class App:
     def __init__(self):
         self.running  = False
         self.vehicles = scan_vehicles()
+        self.comboboxes = [] # 스타일 관리를 위한 배열 추가
 
         if not self.vehicles:
             default_ini = os.path.join("vehicles", "Default.ini")
@@ -272,8 +502,11 @@ class App:
         style.configure("TCheckbutton", font=(F_MAIN, s(9.5)))
         style.configure("Switch.TCheckbutton", font=(F_MAIN, s(9.5)))
         style.configure("TButton", font=(F_MAIN, s(9.5)))
-        style.configure("TCombobox", font=(F_MAIN, s(10)))
         style.configure("TEntry", font=(F_MAIN, s(10)))
+
+        for cb in getattr(self, "comboboxes", []):
+            if cb.winfo_exists():
+                cb.update_style()
 
     def toggle_theme(self):
         """라이트/다크모드 상호 토글 및 스타일 동기화 스위치"""
@@ -359,9 +592,10 @@ class App:
         row.columnconfigure(0, weight=1)
 
         names = list(self.vehicles.keys())
-        self.vehicle_combo = ttk.Combobox(row, textvariable=self.vehicle, values=names, state="readonly")
-        self.vehicle_combo.grid(row=0, column=0, sticky="ew", padx=(0, s(8)), ipady=s(2))
+        self.vehicle_combo = ModernCombobox(row, textvariable=self.vehicle, values=names)
+        self.vehicle_combo.grid(row=0, column=0, sticky="ew", padx=(0, s(8)))
         self.vehicle_combo.bind('<<ComboboxSelected>>', self.vehicle_changed)
+        self.comboboxes.append(self.vehicle_combo)
 
         ttk.Button(row, text="목록 새로고침", command=self.refresh_vehicles).grid(row=0, column=1, padx=s(2))
         ttk.Button(row, text="프로필 로드", command=self.load_cfg).grid(row=0, column=2, padx=(s(2), 0))
@@ -384,8 +618,9 @@ class App:
         self.e_start.grid(row=0, column=1, sticky="ew", ipady=s(2), padx=(0, s(16)))
         
         lbl("시작 역전기 방향", 0, 2)
-        self.combo_start_rev = ttk.Combobox(cf, textvariable=self.start_rev, values=["F", "N", "R"], state="readonly")
-        self.combo_start_rev.grid(row=0, column=3, sticky="ew", ipady=s(1))
+        self.combo_start_rev = ModernCombobox(cf, textvariable=self.start_rev, values=["F", "N", "R"])
+        self.combo_start_rev.grid(row=0, column=3, sticky="ew")
+        self.comboboxes.append(self.combo_start_rev)
         
         lbl("최대 가속단(P)", 1, 0)
         self.e_power = ttk.Entry(cf)
@@ -396,8 +631,9 @@ class App:
         self.e_brake.grid(row=1, column=3, sticky="ew", ipady=s(2))
         
         lbl("제어 방식", 2, 0)
-        self.combo_control = ttk.Combobox(cf, textvariable=self.control, values=["onehandle","twohandle"], state="readonly")
-        self.combo_control.grid(row=2, column=1, sticky="ew", ipady=s(1), padx=(0, s(16)))
+        self.combo_control = ModernCombobox(cf, textvariable=self.control, values=["onehandle","twohandle"])
+        self.combo_control.grid(row=2, column=1, sticky="ew", padx=(0, s(16)))
+        self.comboboxes.append(self.combo_control)
 
         sw_frame1 = ttk.Frame(cf)
         sw_frame1.grid(row=3, column=0, columnspan=4, sticky="ew", pady=(s(6), s(2)), padx=s(4))
