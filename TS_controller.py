@@ -8,7 +8,7 @@ try:
 except Exception:
     pass
 
-# ── DPI 인식 설정 및 기준 배율(125% = 120 DPI) 자동 계산 로직 ──
+# ── DPI 인식 설정 및 기준 배율(100% = 96 DPI) 자동 계산 로직 ──
 try:
     ctypes.windll.shcore.SetProcessDpiAwareness(2)   # PROCESS_PER_MONITOR_DPI_AWARE_V2
 except Exception:
@@ -20,19 +20,19 @@ except Exception:
         except Exception:
             pass
 
-# 현재 시스템의 DPI를 계산하여 125% 배율(120 DPI)을 기준(1.0)으로 잡습니다.
+# 현재 시스템의 DPI를 계산하여 100% 배율(96 DPI)을 기준(1.0)으로 잡습니다.
 def get_dpi_scale():
     try:
         hdc = ctypes.windll.user32.GetDC(0)
-        dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88)
+        dpi = ctypes.windll.gdi32.GetDeviceCaps(hdc, 88) # LOGPIXELSX
         ctypes.windll.user32.ReleaseDC(0, hdc)
-        return dpi / 120.0
+        return dpi / 96.0
     except:
         return 1.0
 
 SCALE = get_dpi_scale()
 
-# 모든 UI의 픽셀 크기(너비, 높이, 폰트, 여백)를 현재 배율에 맞춰 계산해주는 함수
+# 모든 UI의 픽셀 크기(너비, 높이, 여백, 좌표)를 현재 배율에 맞춰 계산해주는 함수
 def s(val):
     return int(val * SCALE)
 
@@ -194,10 +194,11 @@ class ModernCombobox(tk.Frame):
         self.inner_frame = tk.Frame(self, cursor="hand2")
         self.inner_frame.pack(fill="both", expand=True, padx=1, pady=1)
         
-        self.lbl_text = tk.Label(self.inner_frame, textvariable=self.textvariable, font=(F_MAIN, s(10)), anchor="w")
+        # 폰트 크기 지정에서 수동 배율 s() 제거 (OS 자동 스케일링 적용)
+        self.lbl_text = tk.Label(self.inner_frame, textvariable=self.textvariable, font=(F_MAIN, 10), anchor="w")
         self.lbl_text.pack(side="left", padx=(s(8), s(4)), pady=s(4), fill="x", expand=True)
         
-        self.lbl_chevron = tk.Label(self.inner_frame, text=" ∨ ", font=(F_MAIN, s(8)), anchor="e")
+        self.lbl_chevron = tk.Label(self.inner_frame, text=" ∨ ", font=(F_MAIN, 8), anchor="e")
         self.lbl_chevron.pack(side="right", padx=(s(4), s(8)), pady=s(4))
         
         for widget in (self.inner_frame, self.lbl_text, self.lbl_chevron):
@@ -334,7 +335,8 @@ class ModernCombobox(tk.Frame):
             ind = tk.Frame(row_fr, bg=ind_color, width=s(3))
             ind.pack(side="left", fill="y", padx=(s(4), s(8)), pady=s(4))
 
-            lbl = tk.Label(row_fr, text=val, bg=initial_bg, fg=text_color, font=(F_MAIN, s(10)), anchor="w")
+            # 폰트 크기 지정에서 s() 제거
+            lbl = tk.Label(row_fr, text=val, bg=initial_bg, fg=text_color, font=(F_MAIN, 10), anchor="w")
             lbl.pack(side="left", fill="both", expand=True)
 
             def make_hover_enter(r, l, i, is_sel):
@@ -396,7 +398,7 @@ class App:
     def __init__(self):
         self.running  = False
         self.vehicles = scan_vehicles()
-        self.comboboxes = [] # 스타일 관리를 위한 배열 추가
+        self.comboboxes = [] 
 
         if not self.vehicles:
             default_ini = os.path.join("vehicles", "Default.ini")
@@ -460,7 +462,7 @@ class App:
 
         # 테마 적용 및 스타일 동기화 설정
         sv_ttk.set_theme("light") 
-        self.apply_styles() # 전역 폰트 및 스타일 지정
+        self.apply_styles() 
 
         try:
             if os.path.exists(icon_path):
@@ -492,24 +494,23 @@ class App:
         self.root.mainloop()
 
     def apply_styles(self):
-        """테마 전환 시 폰트 및 세부 컴포넌트 스타일이 초기화되는 것을 막기 위해 강제 호출하는 스타일 시트"""
-        self.root.option_add("*Font", (F_MAIN, s(10)))
+        """테마 전환 시 폰트 및 세부 컴포넌트 스타일 크기 고정 (수동 s() 걷어냄)"""
+        self.root.option_add("*Font", (F_MAIN, 10))
         
         style = ttk.Style()
-        style.configure(".", font=(F_MAIN, s(10)))
-        style.configure("TNotebook.Tab", font=(F_MAIN, s(9.5)))
-        style.configure("TLabelframe.Label", font=(F_MAIN, s(9.5), "bold"))  
-        style.configure("TCheckbutton", font=(F_MAIN, s(9.5)))
-        style.configure("Switch.TCheckbutton", font=(F_MAIN, s(9.5)))
-        style.configure("TButton", font=(F_MAIN, s(9.5)))
-        style.configure("TEntry", font=(F_MAIN, s(10)))
+        style.configure(".", font=(F_MAIN, 10))
+        style.configure("TNotebook.Tab", font=(F_MAIN, 9))
+        style.configure("TLabelframe.Label", font=(F_MAIN, 10, "bold"))  
+        style.configure("TCheckbutton", font=(F_MAIN, 10))
+        style.configure("Switch.TCheckbutton", font=(F_MAIN, 10))
+        style.configure("TButton", font=(F_MAIN, 10))
+        style.configure("TEntry", font=(F_MAIN, 10))
 
         for cb in getattr(self, "comboboxes", []):
             if cb.winfo_exists():
                 cb.update_style()
 
     def toggle_theme(self):
-        """라이트/다크모드 상호 토글 및 스타일 동기화 스위치"""
         if sv_ttk.get_theme() == "light":
             sv_ttk.set_theme("dark")
             self.write("테마 변경 완료 ➔ [다크 모드]", "ok")
@@ -519,7 +520,6 @@ class App:
         self.apply_styles()
 
     def _section(self, parent, title, expand=False):
-        """항목들이 상단부터 고정될 수 있도록 expand 옵션을 선택적으로 제어 (기본값 False)"""
         outer = ttk.Frame(parent)
         outer.pack(fill="x", padx=s(16), pady=(s(6), s(6)), expand=expand) 
         card = ttk.LabelFrame(outer, text=f"  {title}  ")
@@ -540,10 +540,8 @@ class App:
         hdr = ttk.Frame(self.root)
         hdr.pack(fill="x", padx=s(20), pady=(s(14), s(6)))
 
-        # 타이틀바 텍스트
-        ttk.Label(hdr, text="TS Controller", font=(F_MAIN, s(16), "bold")).pack(side="left")
-
-        #  헤더 우측 끝자락에 다크모드 토글 스위치 탑재 완료!
+        # 타이틀 폰트 크기 고정
+        ttk.Label(hdr, text="TS Controller", font=(F_MAIN, 16, "bold")).pack(side="left")
         ttk.Button(hdr, text=" 테마 전환 ", command=self.toggle_theme, style="TButton").pack(side="right")
 
         lp = ttk.Frame(self.root)
@@ -552,8 +550,9 @@ class App:
         log_frame = ttk.LabelFrame(lp, text="  시스템 로그 콘솔  ")
         log_frame.pack(fill="both", expand=True)
 
+        # Text 위젯의 height는 '줄 수'이므로 s()를 사용하면 안 됨 (5줄 고정)
         self.log = tk.Text(log_frame, bg="#ffffff", fg="#1a1a1a", relief="flat", 
-                           font=(F_MAIN, s(9)), height=s(5), wrap="word", state="disabled")
+                           font=(F_MAIN, 9), height=5, wrap="word", state="disabled")
         sb = ttk.Scrollbar(log_frame, command=self.log.yview)
         self.log.configure(yscrollcommand=sb.set)
         sb.pack(side="right", fill="y")
@@ -604,14 +603,13 @@ class App:
         cf = ttk.Frame(cp, padding=s(6))
         cf.pack(fill="x", expand=True)
         
-        # 가중치 분배로 라인 칼정렬 확보
         cf.columnconfigure(0, minsize=s(115))
         cf.columnconfigure(1, weight=1)
         cf.columnconfigure(2, minsize=s(115))
         cf.columnconfigure(3, weight=1)
 
         def lbl(t, r, c):
-            ttk.Label(cf, text=t, font=(F_MAIN, s(9.5))).grid(row=r, column=c, sticky="w", pady=s(4), padx=s(4))
+            ttk.Label(cf, text=t, font=(F_MAIN, 10)).grid(row=r, column=c, sticky="w", pady=s(4), padx=s(4))
 
         lbl("시작 노치", 0, 0)
         self.e_start = ttk.Entry(cf)
@@ -637,13 +635,13 @@ class App:
 
         sw_frame1 = ttk.Frame(cf)
         sw_frame1.grid(row=3, column=0, columnspan=4, sticky="ew", pady=(s(6), s(2)), padx=s(4))
-        ttk.Label(sw_frame1, text="최대 가속 단수 도달 시 연속 입력 홀딩 처리 (Power Hold)", font=(F_MAIN, s(9.5))).pack(side="left")
+        ttk.Label(sw_frame1, text="최대 가속 단수 도달 시 연속 입력 홀딩 처리 (Power Hold)", font=(F_MAIN, 10)).pack(side="left")
         self.cb_ph = ttk.Checkbutton(sw_frame1, variable=self.power_hold, style="Switch.TCheckbutton")
         self.cb_ph.pack(side="right")
 
         sw_frame2 = ttk.Frame(cf)
         sw_frame2.grid(row=4, column=0, columnspan=4, sticky="ew", pady=(s(2), s(6)), padx=s(4))
-        ttk.Label(sw_frame2, text="마지막 한계 제동단(최대제동) 도달 시 비상제동(EB Key) 자동 연동 제어", font=(F_MAIN, s(9.5))).pack(side="left")
+        ttk.Label(sw_frame2, text="마지막 한계 제동단(최대제동) 도달 시 비상제동(EB Key) 자동 연동 제어", font=(F_MAIN, 10)).pack(side="left")
         self.cb_eb = ttk.Checkbutton(sw_frame2, variable=self.use_eb, style="Switch.TCheckbutton")
         self.cb_eb.pack(side="right")
 
@@ -652,7 +650,7 @@ class App:
         map_fr.columnconfigure(0, minsize=s(115))
         map_fr.columnconfigure(1, weight=1)
         
-        ttk.Label(map_fr, text="전체 노치 매핑 정의", font=(F_MAIN, s(9.5))).grid(row=0, column=0, sticky="w", padx=s(4))
+        ttk.Label(map_fr, text="전체 노치 매핑 정의", font=(F_MAIN, 10)).grid(row=0, column=0, sticky="w", padx=s(4))
         self.e_names = ttk.Entry(map_fr)
         self.e_names.grid(row=0, column=1, sticky="ew", ipady=s(2))
 
@@ -670,7 +668,7 @@ class App:
         def status_card(col, label, var):
             card = ttk.LabelFrame(df, text=f" {label} ")
             card.grid(row=0, column=col, sticky="ew", padx=s(4), pady=s(2))
-            l = ttk.Label(card, textvariable=var, font=(F_MAIN, s(15), "bold"), anchor="center")
+            l = ttk.Label(card, textvariable=var, font=(F_MAIN, 15, "bold"), anchor="center")
             l.pack(fill="x", padx=s(8), pady=s(10), expand=True)
             return l
 
@@ -691,14 +689,13 @@ class App:
         kf = ttk.Frame(kp, padding=s(8))
         kf.pack(fill="x", expand=True)
         
-        # 키 바인딩 내부 컬럼 줄정렬 고정 너비 보정
         kf.columnconfigure(0, minsize=s(120))
         kf.columnconfigure(1, weight=1)
         kf.columnconfigure(2, minsize=s(120))
         kf.columnconfigure(3, weight=1)
 
         def add_key_catcher(label, var, r, c):
-            ttk.Label(kf, text=label, font=(F_MAIN, s(9.5), "bold")).grid(row=r, column=c, sticky="w", pady=s(6), padx=s(4))
+            ttk.Label(kf, text=label, font=(F_MAIN, 10, "bold")).grid(row=r, column=c, sticky="w", pady=s(6), padx=s(4))
             btn = ttk.Button(kf, textvariable=var)
             btn.grid(row=r, column=c+1, sticky="ew", pady=s(6), padx=(0, s(12) if c==0 else 0))
             btn.config(command=lambda b=btn, v=var: self._start_key_catch(b, v))
@@ -735,7 +732,7 @@ class App:
             "• 오른쪽 키 할당 버튼을 누른 상태에서 매핑하여 연동할 키보드 자판 키를 누르면 저장됩니다.\n"
             "• 원하지 않는 바인딩 줄은 가장 오른쪽의 [ ✕ ] 버튼을 클릭해 실시간 삭제가 가능합니다."
         )
-        ttk.Label(guide, text=info_text, font=(F_MAIN, s(8.5)), justify="left").pack(anchor="w", padx=s(12), pady=s(8))
+        ttk.Label(guide, text=info_text, font=(F_MAIN, 9), justify="left").pack(anchor="w", padx=s(12), pady=s(8))
 
     def _build_about_tab(self):
         tab = self.tab_about
@@ -767,27 +764,27 @@ class App:
             
         self.canvas.bind_all("<MouseWheel>", _on_mousewheel)
 
-        # ── 정보 탭 레이아웃 및 DPI 정렬 보정 ──
         hero = ttk.Frame(self.scroll_inner)
         hero.pack(fill="x", padx=s(16), pady=(s(20), s(10)))
         
-        ttk.Label(hero, text="TS CONTROLLER", font=(F_MAIN, s(22), "bold")).pack(pady=(s(20), s(4)))
-        ttk.Label(hero, text="Train Simulator Joystick Controller for Any Train Simulator", font=(F_MAIN, s(10))).pack()
-        ttk.Label(hero, text="v1.0.5  |  © 2026 HYB1022", font=(F_MAIN, s(9))).pack(pady=(s(2), s(20)))
+        ttk.Label(hero, text="TS CONTROLLER", font=(F_MAIN, 22, "bold")).pack(pady=(s(20), s(4)))
+        ttk.Label(hero, text="Train Simulator Joystick Controller for Any Train Simulator", font=(F_MAIN, 10)).pack()
+        ttk.Label(hero, text="v1.0.5  |  © 2026 HYB1022", font=(F_MAIN, 9)).pack(pady=(s(2), s(20)))
 
         def section_card(title, rows):
             outer = ttk.Frame(self.scroll_inner)
             outer.pack(fill="x", padx=s(16), pady=(s(10), 0))
-            ttk.Label(outer, text=title, font=(F_MAIN, s(8), "bold")).pack(anchor="w", pady=(0, s(4)))
+            ttk.Label(outer, text=title, font=(F_MAIN, 9, "bold")).pack(anchor="w", pady=(0, s(4)))
             
             card = ttk.LabelFrame(outer)
             card.pack(fill="x")
             card.columnconfigure(1, weight=1)
             
             for r, (lbl_txt, val) in enumerate(rows):
-                ttk.Label(card, text=lbl_txt, font=(F_MAIN, s(9)), width=s(16), anchor="e").grid(
+                # Label의 width는 글자 수이므로 s() 제거 고정
+                ttk.Label(card, text=lbl_txt, font=(F_MAIN, 10), width=16, anchor="e").grid(
                     row=r, column=0, sticky="e", padx=(s(12), s(8)), pady=s(5))
-                ttk.Label(card, text=val, font=(F_MAIN, s(9)), anchor="w", justify="left", wraplength=s(320)).grid(
+                ttk.Label(card, text=val, font=(F_MAIN, 10), anchor="w", justify="left", wraplength=s(320)).grid(
                     row=r, column=1, sticky="w", padx=(0, s(12)), pady=s(5))
 
         section_card("프로그램 소개", [
@@ -835,20 +832,21 @@ class App:
         v_joy.trace_add("write", update_disp_text)
         update_disp_text()
 
-        btn_catch = ttk.Button(row_fr, textvariable=v_disp, width=s(14))
+        # 버튼의 width는 글자수 단위이므로 s()를 제거해야 뒤틀리지 않음
+        btn_catch = ttk.Button(row_fr, textvariable=v_disp, width=14)
         btn_catch.pack(side="left", padx=(0, s(8)))
         btn_catch.config(command=lambda b=btn_catch, v=v_joy: self._start_joy_catch(b, v))
 
-        ttk.Label(row_fr, text="➔   연동 가상 키:", font=(F_MAIN, s(9))).pack(side="left", padx=(0, s(6)))
+        ttk.Label(row_fr, text="➔   연동 가상 키:", font=(F_MAIN, 9)).pack(side="left", padx=(0, s(6)))
 
-        btn_key = ttk.Button(row_fr, textvariable=v_key, width=s(10))
+        btn_key = ttk.Button(row_fr, textvariable=v_key, width=10)
         btn_key.pack(side="left")
         btn_key.config(command=lambda b=btn_key, v=v_key: self._start_key_catch(b, v))
 
         item = {"joy_btn": v_joy, "key_out": v_key, "frame": row_fr, "display_var": v_disp}
         self.dyn_mappings.append(item)
 
-        btn_del = ttk.Button(row_fr, text=" ✕ ", width=s(4))
+        btn_del = ttk.Button(row_fr, text=" ✕ ", width=4)
         btn_del.pack(side="right", padx=s(2))
         btn_del.config(command=lambda i=item: self.remove_mapping_row(i))
 
